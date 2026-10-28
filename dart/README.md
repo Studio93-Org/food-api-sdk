@@ -1,8 +1,11 @@
 # studio93_food_api
 
-Flutter client for the [Studio93 Food API](https://api.studio93.io/food/docs) (v2).
+Flutter client for the [Studio93 Food API](https://api.studio93.io/food/docs) (v2): typo-tolerant food search,
+autocomplete, barcode lookups and detailed nutrition. You need an API key from Studio93.
 
 ## Install
+
+Add it to your app's `pubspec.yaml` as a git dependency, pinned to a release:
 
 ```yaml
 dependencies:
@@ -13,25 +16,50 @@ dependencies:
       ref: dart-v0.1.0
 ```
 
-It needs Dart 3.10 and Flutter 3.38 or newer.
+Then run `flutter pub get`. To upgrade, change `ref` to a newer `dart-v…` tag.
 
-## Use one client for the whole app
+## Requirements
+
+| | |
+|---|---|
+| Flutter | 3.38 or newer (Dart 3.10) |
+| iOS | 15 or newer |
+| macOS | 12 or newer, with the outgoing-connections entitlement (`com.apple.security.network.client`) |
+| Android | `minSdk` 24 or newer, with the `INTERNET` permission |
+| Web | supported (requests go through the browser) |
+
+The SDK uses each platform's own HTTP stack: `URLSession` on iOS and macOS and Cronet on Android. Both pool
+connections, speak HTTP/2 and HTTP/3, and cope better with switching between Wi-Fi and mobile data than `dart:io`.
+Cronet comes from Google Play services; on devices without them the SDK falls back to `dart:io`. To bundle Cronet
+in your app instead (for example for devices without Google Play), build with
+`--dart-define=cronetHttpNoPlay=true` (see [cronet_http](https://pub.dev/packages/cronet_http)).
+
+## Create one client for the whole app
 
 ```dart
 import 'package:studio93_food_api/studio93_food_api.dart';
 
-// Create it once (in your dependency injection, a provider or a top-level variable) and share it
 final foodApi = FoodApiClient(apiKey: apiKey, userAgent: 'my-app/1.4.0');
 ```
 
-Sharing one client matters: it keeps connections open, so only the first request pays for connecting. By default it
-uses the platform's own HTTP stack, `URLSession` on iOS and macOS and Cronet on Android (from Google Play
-services; where that's missing, it falls back to `dart:io`). Both speak HTTP/2 and HTTP/3 and cope better with
-switching between Wi-Fi and mobile data.
+Create it once (in your dependency injection, a provider or a top-level variable) and share it. A shared client keeps
+connections open, so only the first request pays for connecting; a client per request pays for it every time.
+Load the API key from your app's configuration (for example Remote Config) and don't commit it.
 
-## Search as the user types
+## Search
 
-Use a `FoodSearchSession` per search screen. A new search cancels the one still in flight, so a slow answer for
+```dart
+final page = await foodApi.search('greek yogurt'); // Typos are fine: 'chiken brest' works
+for (final food in page.foods) {
+  print('${food.name}: ${food.servings.first.nutrients.calories} kcal');
+}
+```
+
+`search` takes `page` (zero-based) and `limit` (1 to 50, default 20). A query nothing matches returns an empty page.
+
+### As the user types
+
+Use one `FoodSearchSession` per search screen. A new search cancels the one still in flight, so a slow answer for
 "app" can never replace the results for "apple":
 
 ```dart
@@ -46,14 +74,15 @@ Future<void> onQueryChanged(String text) async {
   }
 }
 
+// Next page of the same query
+final more = await session.search(text, page: 1);
+
 // When the screen closes
 session.cancel();
 ```
 
-Debounce the text field as usual (250 to 500 ms). `session.autocomplete(text)` works the same way for type-ahead
-suggestions; look a picked suggestion up with `foodApi.food(suggestion.id)`.
-
-To load the next page of the same query, call `session.search(text, page: 1)`.
+Debounce the text field as usual (250 to 500 ms). For a type-ahead list, `session.autocomplete(text)` works the same
+way and is fast enough for every keystroke; look a picked suggestion up with `foodApi.food(suggestion.id)`.
 
 ## Barcodes
 
@@ -70,7 +99,7 @@ try {
 
 ## Errors
 
-Every failure is a `FoodApiException`; switch on the type to show the right message:
+Every failure is a `FoodApiException`. Switch on the type to show the right message:
 
 ```dart
 try {
@@ -80,7 +109,7 @@ try {
     case FoodApiNotFound():
       showNotFound();
     case FoodApiRateLimited() || FoodApiUnavailable():
-      showTryAgainSoon(); // Already retried; e.retryAfter says when to try again
+      showTryAgainSoon(); // Already retried
     case FoodApiNetworkException() || FoodApiTimeoutException():
       showOffline();
     case FoodApiCancelledException():
@@ -91,38 +120,40 @@ try {
 }
 ```
 
-Temporary failures (network errors, timeouts, 429, 502, 503, 504) are retried twice before they reach you. Change
-that with `FoodApiClient(maxRetries: ...)`, and the per-attempt limit with `timeout:`.
+Temporary failures (network errors, timeouts, and 429, 502, 503 and 504 responses) are retried twice before they
+reach you, waiting as long as the API's `Retry-After` header asks (up to 10 seconds). Change this with
+`FoodApiClient(maxRetries: …)`, and the time limit per attempt with `timeout:` (default 15 seconds).
 
 ## Nutrition
 
-Each serving has its nutrients as numbers, null when unknown. The 17 core nutrients have getters; read any other
+Every serving has its nutrients as numbers, null when unknown. The 17 core nutrients have getters; read any other
 key by name. `foodApi.nutrients()` lists every key with its name and unit.
 
 ```dart
-final serving = food.servings.first; // The last serving is always 100 g (or 100 ml)
-final n = serving.nutrients;
+final n = food.servings.last.nutrients; // The last serving is always 100 g (or 100 ml)
 print('${n.calories} kcal, ${n.protein} g protein, ${n['magnesium']} mg magnesium');
 ```
 
-Some values aren't plain measurements. Show them as the label meant them:
+Some values aren't plain measurements. Show them the way the label meant them:
 
 ```dart
 String sugarText(Food food, double grams) => switch (food.flag('sugar')) {
-      NutrientFlag.upperBound => '< ${grams.toStringAsFixed(1)} g', // The label said "less than"
-      NutrientFlag.approximate => '~${grams.toStringAsFixed(1)} g',
-      _ => '${grams.toStringAsFixed(1)} g',
-    };
+  NutrientFlag.upperBound => '< ${grams.toStringAsFixed(1)} g', // The label said "less than"
+  NutrientFlag.approximate => '~${grams.toStringAsFixed(1)} g',
+  _ => '${grams.toStringAsFixed(1)} g',
+};
 ```
 
-`foodApi.nutrientStats(food.id)` has the full details behind each value (samples, spread, how it was obtained),
-where the source gives them.
+`food.alternateNames` has the other names a source gives the food, and `foodApi.nutrientStats(food.id)` the details
+behind each value (samples, spread, how it was obtained) where the source gives them.
 
 ## Testing your app
 
-Pass your own `http.Client` (for example `MockClient` from `package:http/testing.dart`) as `httpClient:`. The
-SDK's own live test runs against the API with a key:
+Pass your own `http.Client` as `httpClient:`, for example `MockClient` from `package:http/testing.dart`; the
+`FoodApiClient` then leaves it open when you call `close()`. [example/example.dart](example/example.dart) has these
+snippets as code that compiles. The SDK's own tests:
 
 ```bash
-FOOD_API_KEY=... flutter test test/live_test.dart
+flutter test                                       # unit tests
+FOOD_API_KEY=... flutter test test/live_test.dart  # against the API
 ```
