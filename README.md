@@ -59,3 +59,7 @@ for _, food := range page.Foods {
 Both SDKs follow the API's v2 and are versioned together. Releases are git tags: `dart-v0.1.0` for Flutter (use
 it as the git dependency's `ref`) and `go/v0.1.0` for Go, which you install as
 `go get github.com/Studio93-Org/food-api-sdk/go@v0.1.0`.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Using the API itself needs an API key from Studio93.
