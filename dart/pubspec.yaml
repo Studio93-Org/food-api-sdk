@@ -1,0 +1,24 @@
+name: studio93_food_api
+description: >-
+  Client for the Studio93 Food API (v2): typo-tolerant food search, autocomplete, barcode lookups and detailed
+  nutrition, over the platform's own HTTP stack.
+version: 0.1.0
+publish_to: none
+repository: https://github.com/Studio93-Org/food-api-sdk
+
+environment:
+  sdk: ^3.10.0
+  flutter: ">=3.38.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.6.0
+  http_parser: ^4.1.0
+  cupertino_http: ^3.1.0
+  cronet_http: ^1.10.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
