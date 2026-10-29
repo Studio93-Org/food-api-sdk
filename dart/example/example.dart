@@ -66,7 +66,7 @@ Future<void> handleErrors(String text) async {
 }
 
 void showNutrition(Food food) {
-  final n = food.servings.last.nutrients; // The last serving is always 100 g (or 100 ml)
+  final n = food.servings.first.nutrients; // The source's first serving; generic ones come last
   print('${n.calories} kcal, ${n.protein} g protein, ${n['magnesium']} mg magnesium');
   final sugar = n.sugar;
   if (sugar != null) print(sugarText(food, sugar));

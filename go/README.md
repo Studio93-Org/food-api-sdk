@@ -6,11 +6,11 @@ autocomplete, barcode lookups and detailed nutrition. You need an API key from S
 ## Install
 
 ```bash
-go get github.com/Studio93-Org/food-api-sdk/go@v0.1.0
+go get github.com/Studio93-Org/food-api-sdk/go@v0.2.0
 ```
 
 It needs Go 1.23 or newer and has no dependencies beyond the standard library. The module lives in the `go/` folder,
-so its releases are tagged `go/v…`, but you install them by version (`@v0.1.0`, or `@latest`).
+so its releases are tagged `go/v…`, but you install them by version (`@v0.2.0`, or `@latest`).
 
 ## Use
 
@@ -76,6 +76,10 @@ if food.Flag(foodapi.Sugar) == foodapi.FlagUpperBound {
 	// The label said "less than": show "< x g"
 }
 ```
+
+A food's servings start with its source's own and end with generic ones (`Generic: true`): 100 g and 1 oz for
+solids, plus 1 cup or 1 tbsp and 1 tsp where the source measures the food that way; 100 ml, 1 fl oz, 1 cup, 1 tbsp
+and 1 tsp for liquids. Foods whose servings have no weight have none.
 
 Flags mark values that aren't plain measurements: `FlagUpperBound`, `FlagApproximate` and `FlagAssumedZero`.
 `food.AlternateNames()` has the other names a source gives the food.

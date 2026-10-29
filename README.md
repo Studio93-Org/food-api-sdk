@@ -22,13 +22,13 @@ dependencies:
     git:
       url: https://github.com/Studio93-Org/food-api-sdk.git
       path: dart
-      ref: dart-v0.1.0
+      ref: dart-v0.2.0
 ```
 
 Go:
 
 ```bash
-go get github.com/Studio93-Org/food-api-sdk/go@v0.1.0
+go get github.com/Studio93-Org/food-api-sdk/go@v0.2.0
 ```
 
 ## Quick start
@@ -79,8 +79,8 @@ for _, food := range page.Foods {
 
 ## Versions
 
-Both SDKs follow the API's v2 and are released together as git tags: `dart-v0.1.0` for Flutter (the git
-dependency's `ref`) and `go/v0.1.0` for Go (installed as `@v0.1.0`). Changes are listed in
+Both SDKs follow the API's v2 and are released together as git tags: `dart-v0.2.0` for Flutter (the git
+dependency's `ref`) and `go/v0.2.0` for Go (installed as `@v0.2.0`). Changes are listed in
 [dart/CHANGELOG.md](dart/CHANGELOG.md).
 
 ## License

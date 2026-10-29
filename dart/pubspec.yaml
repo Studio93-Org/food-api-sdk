@@ -2,7 +2,7 @@ name: studio93_food_api
 description: >-
   Client for the Studio93 Food API (v2): typo-tolerant food search, autocomplete, barcode lookups and detailed
   nutrition, over the platform's own HTTP stack.
-version: 0.1.0
+version: 0.2.0
 publish_to: none
 repository: https://github.com/Studio93-Org/food-api-sdk
 

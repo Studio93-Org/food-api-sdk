@@ -12,7 +12,7 @@ import 'platform_client.dart';
 import 'session.dart';
 
 /// The SDK version, sent in the User-Agent header.
-const sdkVersion = '0.1.0';
+const sdkVersion = '0.2.0';
 
 /// The Food API.
 final defaultBaseUrl = Uri.parse('https://api.studio93.io');

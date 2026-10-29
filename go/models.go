@@ -61,6 +61,9 @@ type Serving struct {
 	Units        *float64  `json:"units"`
 	Nutrients    Nutrients `json:"nutrients"`
 	SourceID     string    `json:"source_id,omitempty"` // The source's own ID for the serving, when it has one
+	// A generic serving (100 g, 1 oz, 1 fl oz, 1 cup, …) the API worked out from the source's servings; generic
+	// servings come after the source's own
+	Generic bool `json:"generic,omitempty"`
 }
 
 // Nutrients holds a serving's nutrient amounts by key, in the units Client.Nutrients lists. The core nutrients

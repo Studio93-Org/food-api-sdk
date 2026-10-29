@@ -8,7 +8,9 @@ import 'package:studio93_food_api/studio93_food_api.dart';
 const foodJson =
     '''{"id":"01a163d2-bfdc-7912-878d-4020b11915ab","name":"Cola","brand":null,"type":"generic","barcodes":[],
  "servings":[{"description":"100 g","measurement":"g","metric_amount":100,"metric_unit":"g","units":100,
-   "nutrients":{"calories":37,"protein":0,"sugar":0.5,"fiber":null,"cnf_409":0.01}}],
+   "nutrients":{"calories":37,"protein":0,"sugar":0.5,"fiber":null,"cnf_409":0.01}},
+  {"description":"1 fl oz","measurement":"fl oz","metric_amount":29.57,"metric_unit":"ml","units":1,"generic":true,
+   "nutrients":{"calories":10.94}}],
  "source":{"provider":"CNF","id":"2920"},"ingredients":null,"category":"Beverages",
  "attributes":{"alternate_names":"pop, soda, soft drink"},"nutrient_flags":{"sugar":"upper_bound","fat":"something_new"}}''';
 
@@ -69,7 +71,8 @@ void main() {
     expect(page.cached, isTrue);
 
     final food = page.foods.single;
-    final n = food.servings.single.nutrients;
+    expect(food.servings.map((s) => s.generic), [false, true]);
+    final n = food.servings.first.nutrients;
     expect(n.calories, 37);
     expect(n.fiber, isNull, reason: 'unknown values are null');
     expect(n['cnf_409'], 0.01);

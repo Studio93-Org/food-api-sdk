@@ -76,7 +76,7 @@ func ExampleNutrients_Get() {
 		return
 	}
 
-	n := food.Servings[0].Nutrients // The last serving is always 100 g (or 100 ml)
+	n := food.Servings[0].Nutrients // The source's first serving; generic ones (Generic: true) come last
 	if kcal, ok := n.Get(foodapi.Calories); ok {
 		fmt.Printf("%.0f kcal\n", kcal)
 	}

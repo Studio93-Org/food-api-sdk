@@ -13,7 +13,9 @@ import (
 
 const foodJSON = `{"id":"01a163d2-bfdc-7912-878d-4020b11915ab","name":"Cola","brand":null,"type":"generic","barcodes":[],
  "servings":[{"description":"100 g","measurement":"g","metric_amount":100,"metric_unit":"g","units":100,
-   "nutrients":{"calories":37,"protein":0,"sugar":0.5,"fiber":null,"cnf_409":0.01}}],
+   "nutrients":{"calories":37,"protein":0,"sugar":0.5,"fiber":null,"cnf_409":0.01}},
+  {"description":"1 fl oz","measurement":"fl oz","metric_amount":29.57,"metric_unit":"ml","units":1,"generic":true,
+   "nutrients":{"calories":10.94}}],
  "source":{"provider":"CNF","id":"2920"},"ingredients":null,"category":"Beverages",
  "attributes":{"alternate_names":"pop, soda, soft drink"},"nutrient_flags":{"sugar":"upper_bound"}}`
 
@@ -60,6 +62,9 @@ func TestSearch(t *testing.T) {
 	}
 	if v, ok := n.Get("cnf_409"); !ok || v != 0.01 {
 		t.Errorf("other nutrients should be readable by key: %v", v)
+	}
+	if f.Servings[0].Generic || !f.Servings[1].Generic || f.Servings[1].Description != "1 fl oz" {
+		t.Errorf("generic flags = %v, %v", f.Servings[0].Generic, f.Servings[1].Generic)
 	}
 	if f.Flag(Sugar) != FlagUpperBound || f.Flag(Protein) != "" {
 		t.Errorf("flags = %v", f.NutrientFlags)

@@ -115,6 +115,7 @@ class Serving {
     this.metricAmount,
     this.units,
     this.sourceId,
+    this.generic = false,
   });
 
   factory Serving.fromJson(Map<String, dynamic> json) => Serving(
@@ -125,6 +126,7 @@ class Serving {
     units: _double(json['units']),
     nutrients: Nutrients.fromJson(json['nutrients']),
     sourceId: json['source_id'] as String?,
+    generic: json['generic'] == true,
   );
 
   final String description;
@@ -136,6 +138,10 @@ class Serving {
 
   /// The source's own ID for the serving, when it has one.
   final String? sourceId;
+
+  /// Whether the API worked this serving out from the source's ones (100 g, 1 oz, 1 fl oz, 1 cup, …). Generic
+  /// servings come after the source's own.
+  final bool generic;
 }
 
 /// A serving's nutrient amounts by key, in the units [FoodApiClient.nutrients] lists. The core nutrients have

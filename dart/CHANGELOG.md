@@ -1,3 +1,8 @@
+## 0.2.0
+
+- `Serving.generic`: the API now adds generic servings (100 g, 1 oz, 1 fl oz, 1 cup, 1 tbsp, 1 tsp where they make
+  sense) after a food's own; this flag tells them apart.
+
 ## 0.1.0
 
 - First release: search, autocomplete, food by ID and by barcode (plain, GS1 codes and Digital Links), nutrient

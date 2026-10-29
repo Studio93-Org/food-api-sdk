@@ -13,7 +13,7 @@ dependencies:
     git:
       url: https://github.com/Studio93-Org/food-api-sdk.git
       path: dart
-      ref: dart-v0.1.0
+      ref: dart-v0.2.0
 ```
 
 Then run `flutter pub get`. To upgrade, change `ref` to a newer `dart-v…` tag.
@@ -130,9 +130,13 @@ Every serving has its nutrients as numbers, null when unknown. The 17 core nutri
 key by name. `foodApi.nutrients()` lists every key with its name and unit.
 
 ```dart
-final n = food.servings.last.nutrients; // The last serving is always 100 g (or 100 ml)
+final n = food.servings.first.nutrients; // The source's first serving
 print('${n.calories} kcal, ${n.protein} g protein, ${n['magnesium']} mg magnesium');
 ```
+
+A food's servings start with its source's own and end with generic ones (`serving.generic`): 100 g and 1 oz for
+solids, plus 1 cup or 1 tbsp and 1 tsp where the source measures the food that way; 100 ml, 1 fl oz, 1 cup, 1 tbsp
+and 1 tsp for liquids. Foods whose servings have no weight have none.
 
 Some values aren't plain measurements. Show them the way the label meant them:
 
