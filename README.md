@@ -9,7 +9,8 @@ serving.
 | Flutter / Dart | [`dart/`](dart) | Flutter 3.38+, iOS 15+, macOS 12+, Android `minSdk` 24, web | [dart/README.md](dart/README.md) |
 | Go | [`go/`](go) | Go 1.23+, no dependencies | [go/README.md](go/README.md) |
 
-You need an API key issued by Studio93. The SDKs don't include one: load yours from your app's configuration and
+You need a v2 API key issued by Studio93 (keys are issued per API version, and a v1 key gets a 403 error). The
+SDKs don't include one: load yours from your app's configuration and
 don't commit it.
 
 ## Install
@@ -85,4 +86,4 @@ dependency's `ref`) and `go/v0.2.0` for Go (installed as `@v0.2.0`). Changes are
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Using the API itself needs an API key from Studio93.
+MIT, see [LICENSE](LICENSE). Using the API itself needs a v2 API key from Studio93.

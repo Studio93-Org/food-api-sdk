@@ -1,7 +1,8 @@
 # studio93_food_api
 
 Flutter client for the [Studio93 Food API](https://api.studio93.io/food/docs) (v2): typo-tolerant food search,
-autocomplete, barcode lookups and detailed nutrition. You need an API key from Studio93.
+autocomplete, barcode lookups and detailed nutrition. You need a v2 API key from Studio93; a v1 key gets a 403
+error.
 
 ## Install
 
