@@ -10,8 +10,7 @@ serving.
 | Go | [`go/`](go) | Go 1.23+, no dependencies | [go/README.md](go/README.md) |
 
 You need a v2 API key issued by Studio93 (keys are issued per API version, and a v1 key gets a 403 error). The
-SDKs don't include one: load yours from your app's configuration and
-don't commit it.
+SDKs don't include one: load yours from your app's configuration and don't commit it.
 
 ## Install
 
