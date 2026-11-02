@@ -109,3 +109,17 @@ func ExampleClient_Autocomplete() {
 		fmt.Println(s.Name)
 	}
 }
+
+func ExampleWithClientIP() {
+	client := foodapi.New(os.Getenv("FOOD_API_KEY"))
+
+	// In your server's handler: search for this user, so regional ranking uses their country, not the server's
+	userIP := "81.2.69.160" // For example from your load balancer's X-Forwarded-For
+	ctx := foodapi.WithClientIP(context.Background(), userIP)
+	page, err := client.Search(ctx, "cheddar cheese", nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(page.Region) // "GB" when British foods ranked first
+}

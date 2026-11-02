@@ -186,6 +186,7 @@ class SearchPage {
     required this.limit,
     required this.total,
     required this.source,
+    this.region,
     required this.cached,
   });
 
@@ -199,6 +200,10 @@ class SearchPage {
 
   /// "catalog", or "provider" when the catalog had no good match and the results came from an outside provider.
   final String source;
+
+  /// With regional ranking, the country whose foods ranked first among equally good matches (an ISO code such as
+  /// "CA"); null when none did. The API finds the user's country from the device's address, so apps send nothing.
+  final String? region;
 
   /// Whether the API answered from its cache.
   final bool cached;

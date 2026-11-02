@@ -242,3 +242,28 @@ func TestParseRetryAfter(t *testing.T) {
 		t.Errorf("date form = %v", d)
 	}
 }
+
+func TestClientIP(t *testing.T) {
+	var got []string
+	c, _ := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		got = append(got, r.Header.Get("X-Client-IP"))
+		w.Write([]byte(`{"data":[],"meta":{"query":"cheddar","page":0,"limit":20,"total":0,"source":"catalog","region":"GB"}}`))
+	})
+	page, err := c.Search(WithClientIP(context.Background(), " 81.2.69.160 "), "cheddar", nil)
+	if err != nil || page.Region != "GB" {
+		t.Fatalf("page = %+v, %v", page, err)
+	}
+	if _, err := c.Search(context.Background(), "cheddar", nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := c.Autocomplete(WithClientIP(context.Background(), "2001:db8::1"), "ched", 0); err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 3 || got[0] != "81.2.69.160" || got[1] != "" || got[2] != "2001:db8::1" {
+		t.Errorf("X-Client-IP sent = %q", got)
+	}
+	// An invalid address fails before a request
+	if _, err := c.Food(WithClientIP(context.Background(), "81.2.69"), "x"); !errors.Is(err, ErrInvalidInput) || len(got) != 3 {
+		t.Errorf("invalid address: %v after %d requests", err, len(got))
+	}
+}

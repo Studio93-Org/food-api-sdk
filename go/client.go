@@ -9,6 +9,7 @@ import (
 	"math/rand/v2"
 	"net"
 	"net/http"
+	"net/netip"
 	"net/url"
 	"strconv"
 	"strings"
@@ -16,7 +17,7 @@ import (
 )
 
 // Version is the SDK version, sent in the User-Agent header.
-const Version = "0.2.0"
+const Version = "0.3.0"
 
 // DefaultBaseURL is the Food API.
 const DefaultBaseURL = "https://api.studio93.io"
@@ -91,6 +92,17 @@ func New(apiKey string, opts ...Option) *Client {
 	return c
 }
 
+type clientIPKey struct{}
+
+// WithClientIP returns a context for calls made for one of your users, carrying that user's IP address. When your
+// server calls the API for its users, pass each user's address this way: search ranks for the user's country rather
+// than your server's (with a key that has regional ranking), and usage by country counts the user's. Apps that call
+// the API from the user's own device don't need it. An address that isn't IPv4 or IPv6 makes the call return
+// ErrInvalidInput.
+func WithClientIP(ctx context.Context, ip string) context.Context {
+	return context.WithValue(ctx, clientIPKey{}, strings.TrimSpace(ip))
+}
+
 // SearchOptions selects a page of search results.
 type SearchOptions struct {
 	Page  int // Zero-based, 0 to 1000
@@ -126,6 +138,7 @@ func (c *Client) Search(ctx context.Context, query string, opts *SearchOptions) 
 			Limit  int    `json:"limit"`
 			Total  int64  `json:"total"`
 			Source string `json:"source"`
+			Region string `json:"region"`
 		} `json:"meta"`
 	}
 	cached, err := c.get(ctx, "/v2/foods/search", params, &page)
@@ -133,7 +146,7 @@ func (c *Client) Search(ctx context.Context, query string, opts *SearchOptions) 
 		return nil, err
 	}
 	return &SearchPage{Foods: nonNil(page.Data), Query: page.Meta.Query, Page: page.Meta.Page, Limit: page.Meta.Limit,
-		Total: page.Meta.Total, Source: page.Meta.Source, Cached: cached}, nil
+		Total: page.Meta.Total, Source: page.Meta.Source, Region: page.Meta.Region, Cached: cached}, nil
 }
 
 // Autocomplete suggests foods for what has been typed so far; the last word matches as a prefix ("chick" finds
@@ -238,6 +251,11 @@ func checkQuery(q string) error {
 // the API answered from its cache.
 // path is already escaped (url.PathEscape), so encoded slashes in a barcode link stay encoded.
 func (c *Client) get(ctx context.Context, path string, params url.Values, out any) (cached bool, err error) {
+	if ip, ok := ctx.Value(clientIPKey{}).(string); ok && ip != "" {
+		if _, err := netip.ParseAddr(ip); err != nil {
+			return false, fmt.Errorf("%w: client IP %q is not an IPv4 or IPv6 address", ErrInvalidInput, ip)
+		}
+	}
 	rawURL := strings.TrimRight(c.baseURL.String(), "/") + path
 	if len(params) > 0 {
 		rawURL += "?" + params.Encode()
@@ -270,6 +288,9 @@ func (c *Client) once(ctx context.Context, rawURL string, out any) (cached bool,
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", c.userAgent)
+	if ip, ok := ctx.Value(clientIPKey{}).(string); ok && ip != "" {
+		req.Header.Set("X-Client-IP", ip)
+	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {

@@ -22,13 +22,13 @@ dependencies:
     git:
       url: https://github.com/Studio93-Org/food-api-sdk.git
       path: dart
-      ref: dart-v0.2.0
+      ref: dart-v0.3.0
 ```
 
 Go:
 
 ```bash
-go get github.com/Studio93-Org/food-api-sdk/go@v0.2.0
+go get github.com/Studio93-Org/food-api-sdk/go@v0.3.0
 ```
 
 ## Quick start
@@ -74,13 +74,17 @@ for _, food := range page.Foods {
   as the API's `Retry-After` header asks.
 - **Typed errors.** "Not found" is an answer, not a failure, and a different error from "rate limited",
   "unavailable" or "offline", so apps can show the right message.
+- **Regional ranking.** With a key that has it, search puts one country's foods first among equally good matches:
+  the user's country, or one set on the key. Apps calling from the user's device get it automatically; a Go server
+  calling for its users passes each user's address with `WithClientIP`. The page's region says which country ranked
+  first.
 - **Nutrition as numbers.** Nutrients are numbers, null when unknown, with flags for values that aren't plain
   measurements: `upper_bound` (the label said "less than"), `approximate` and `assumed_zero`.
 
 ## Versions
 
-Both SDKs follow the API's v2 and are released together as git tags: `dart-v0.2.0` for Flutter (the git
-dependency's `ref`) and `go/v0.2.0` for Go (installed as `@v0.2.0`). Changes are listed in
+Both SDKs follow the API's v2 and are released together as git tags: `dart-v0.3.0` for Flutter (the git
+dependency's `ref`) and `go/v0.3.0` for Go (installed as `@v0.3.0`). Changes are listed in
 [dart/CHANGELOG.md](dart/CHANGELOG.md).
 
 ## License

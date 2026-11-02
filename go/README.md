@@ -7,11 +7,11 @@ error.
 ## Install
 
 ```bash
-go get github.com/Studio93-Org/food-api-sdk/go@v0.2.0
+go get github.com/Studio93-Org/food-api-sdk/go@v0.3.0
 ```
 
 It needs Go 1.23 or newer and has no dependencies beyond the standard library. The module lives in the `go/` folder,
-so its releases are tagged `go/v…`, but you install them by version (`@v0.2.0`, or `@latest`).
+so its releases are tagged `go/v…`, but you install them by version (`@v0.3.0`, or `@latest`).
 
 ## Use
 
@@ -33,7 +33,7 @@ for _, food := range page.Foods {
 
 | Call | Returns |
 |---|---|
-| `Search(ctx, query, &SearchOptions{Page, Limit})` | a page of foods (`Page` is zero-based, `Limit` 1 to 50, default 20) |
+| `Search(ctx, query, &SearchOptions{Page, Limit})` | a page of foods (`Page` is zero-based, `Limit` 1 to 50, default 20); `Region` is the country ranked first, if any |
 | `Autocomplete(ctx, query, limit)` | suggestions for what has been typed so far (`limit` 1 to 20, default 8) |
 | `Food(ctx, id)` | one food by its catalog ID |
 | `FoodByBarcode(ctx, scanned)` | the food for a barcode, GS1 code or GS1 Digital Link |
@@ -42,6 +42,20 @@ for _, food := range page.Foods {
 
 Cancel a call, or give it a deadline, with its context. For search as the user types, cancel the previous call's
 context when a new one starts.
+
+### Calling for your users
+
+When your server calls the API for its users, pass each user's IP address with the call's context. Search then
+ranks for the user's country instead of your server's (when your key has regional ranking), and `page.Region` says
+which country's foods came first:
+
+```go
+ctx = foodapi.WithClientIP(ctx, userIP) // The user's address, e.g. from your load balancer
+page, err := client.Search(ctx, "cheddar cheese", nil)
+```
+
+It is sent as the `X-Client-IP` header on every call made with that context. Rate limits still apply to your
+server's own address. An address that isn't IPv4 or IPv6 returns `ErrInvalidInput` without a request.
 
 ## Errors
 

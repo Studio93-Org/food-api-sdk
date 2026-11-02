@@ -19,6 +19,9 @@
 //		// No source knows this barcode: an answer, not a failure
 //	}
 //
+// A server calling the API for its users passes each user's IP address with WithClientIP, so search ranks for the
+// user's country rather than the server's.
+//
 // Errors from the API are *APIError values, which match ErrNotFound, ErrRateLimited, ErrUnavailable and the other
 // sentinels with errors.Is. Cancel a call with its context, for example to drop a search the user has typed past.
 //

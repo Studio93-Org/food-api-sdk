@@ -1,3 +1,8 @@
+## 0.3.0
+
+- `SearchPage.region`: with a key that has regional ranking, the country whose foods ranked first (the user's
+  country, found by the API from the device's address, or one set on the key).
+
 ## 0.2.0
 
 - `Serving.generic`: the API now adds generic servings (100 g, 1 oz, 1 fl oz, 1 cup, 1 tbsp, 1 tsp where they make

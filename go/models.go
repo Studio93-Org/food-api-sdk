@@ -122,6 +122,9 @@ type SearchPage struct {
 	Total int64
 	// "catalog", or "provider" when the catalog had no good match and the results came from an outside provider
 	Source string
+	// With regional ranking, the country whose foods ranked first among equally good matches (an ISO code such as
+	// "CA"); "" when none did
+	Region string
 	Cached bool // Answered from the API's cache
 }
 

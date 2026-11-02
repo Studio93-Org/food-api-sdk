@@ -51,6 +51,16 @@ FoodApiClient clientWith(FakeClient fake, {Duration timeout = const Duration(sec
     );
 
 void main() {
+  test('search reports the country that ranked first', () async {
+    final fake = FakeClient(
+      (r) async => json(
+        200,
+        '{"data":[],"meta":{"query":"cheddar","page":0,"limit":20,"total":0,"source":"catalog","region":"CA"}}',
+      ),
+    );
+    expect((await clientWith(fake).search('cheddar')).region, 'CA');
+  });
+
   test('search sends the query and key and parses the page', () async {
     final fake = FakeClient(
       (r) async => json(
@@ -69,6 +79,7 @@ void main() {
     expect(page.query, 'cola zero');
     expect(page.total, 11);
     expect(page.cached, isTrue);
+    expect(page.region, isNull, reason: 'no country ranked first');
 
     final food = page.foods.single;
     expect(food.servings.map((s) => s.generic), [false, true]);
