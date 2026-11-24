@@ -11,6 +11,7 @@ import (
 var (
 	ErrBadRequest   = errors.New("food api: bad request")   // 400: a parameter is missing or invalid
 	ErrUnauthorized = errors.New("food api: unauthorized")  // 401: the API key is missing, invalid or revoked
+	ErrForbidden    = errors.New("food api: forbidden")     // 403: the key is for another API version (a v1 key)
 	ErrNotFound     = errors.New("food api: not found")     // 404: no such food or barcode; an answer, not a failure
 	ErrRateLimited  = errors.New("food api: rate limited")  // 429: slow down and retry
 	ErrUnavailable  = errors.New("food api: unavailable")   // 503: busy or down for a moment; retry shortly
@@ -36,6 +37,8 @@ func (e *APIError) Is(target error) bool {
 		return e.StatusCode == http.StatusBadRequest
 	case ErrUnauthorized:
 		return e.StatusCode == http.StatusUnauthorized
+	case ErrForbidden:
+		return e.StatusCode == http.StatusForbidden
 	case ErrNotFound:
 		return e.StatusCode == http.StatusNotFound
 	case ErrRateLimited:

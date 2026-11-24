@@ -17,7 +17,7 @@ import (
 )
 
 // Version is the SDK version, sent in the User-Agent header.
-const Version = "0.4.0"
+const Version = "0.4.1"
 
 // DefaultBaseURL is the Food API.
 const DefaultBaseURL = "https://api.studio93.io"
@@ -139,6 +139,7 @@ func (c *Client) Search(ctx context.Context, query string, opts *SearchOptions) 
 			Total  int64  `json:"total"`
 			Source string `json:"source"`
 			Region string `json:"region"`
+			Brand  string `json:"brand"`
 		} `json:"meta"`
 	}
 	cached, err := c.get(ctx, "/v2/foods/search", params, &page)
@@ -146,7 +147,7 @@ func (c *Client) Search(ctx context.Context, query string, opts *SearchOptions) 
 		return nil, err
 	}
 	return &SearchPage{Foods: nonNil(page.Data), Query: page.Meta.Query, Page: page.Meta.Page, Limit: page.Meta.Limit,
-		Total: page.Meta.Total, Source: page.Meta.Source, Region: page.Meta.Region, Cached: cached}, nil
+		Total: page.Meta.Total, Source: page.Meta.Source, Region: page.Meta.Region, Brand: page.Meta.Brand, Cached: cached}, nil
 }
 
 // Autocomplete suggests foods for what has been typed so far; the last word matches as a prefix ("chick" finds

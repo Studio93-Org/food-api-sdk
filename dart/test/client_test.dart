@@ -61,6 +61,18 @@ void main() {
     expect((await clientWith(fake).search('cheddar')).region, 'CA');
   });
 
+  test('search reports the brand the query names', () async {
+    final fake = FakeClient(
+      (r) async => json(
+        200,
+        '{"data":[],"meta":{"query":"coke","page":0,"limit":20,"total":0,"source":"catalog","brand":"Coca-Cola"}}',
+      ),
+    );
+    final page = await clientWith(fake).search('coke');
+    expect(page.brand, 'Coca-Cola');
+    expect(page.region, isNull);
+  });
+
   test('search sends the query and key and parses the page', () async {
     final fake = FakeClient(
       (r) async => json(
@@ -179,6 +191,7 @@ void main() {
     final expected = <int, TypeMatcher<FoodApiException>>{
       400: isA<FoodApiBadRequest>(),
       401: isA<FoodApiUnauthorized>(),
+      403: isA<FoodApiForbidden>(),
       404: isA<FoodApiNotFound>(),
       429: isA<FoodApiRateLimited>(),
       503: isA<FoodApiUnavailable>(),

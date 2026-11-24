@@ -154,6 +154,8 @@ type SearchPage struct {
 	// With regional ranking, the country whose foods ranked first among equally good matches (an ISO code such as
 	// "CA"); "" when none did
 	Region string
+	// The brand the query names, whose foods ranked first ("Coca-Cola" for "coke"); "" when it names none
+	Brand  string
 	Cached bool // Answered from the API's cache
 }
 

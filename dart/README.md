@@ -14,7 +14,7 @@ dependencies:
     git:
       url: https://github.com/Studio93-Org/food-api-sdk.git
       path: dart
-      ref: dart-v0.4.0
+      ref: dart-v0.4.1
 ```
 
 Then run `flutter pub get`. To upgrade, change `ref` to a newer `dart-v…` tag.
@@ -58,7 +58,8 @@ for (final food in page.foods) {
 
 `search` takes `page` (zero-based) and `limit` (1 to 50, default 20). A query nothing matches returns an empty page.
 With a key that has regional ranking, `page.region` is the country whose foods came first: the user's (the API finds
-it from the device's address) or one set on the key.
+it from the device's address) or one set on the key. When the query names a brand ("coke"), `page.brand` says which
+("Coca-Cola"), and its foods come first.
 
 ### As the user types
 
@@ -113,6 +114,8 @@ try {
       showNotFound();
     case FoodApiRateLimited() || FoodApiUnavailable():
       showTryAgainSoon(); // Already retried
+    case FoodApiForbidden():
+      reportConfigError(); // The key is for another API version: the SDK needs a v2 key
     case FoodApiNetworkException() || FoodApiTimeoutException():
       showOffline();
     case FoodApiCancelledException():

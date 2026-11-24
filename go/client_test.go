@@ -175,7 +175,7 @@ func TestBarcodeLinksAreEscaped(t *testing.T) {
 
 func TestErrors(t *testing.T) {
 	for status, want := range map[int]error{
-		400: ErrBadRequest, 401: ErrUnauthorized, 404: ErrNotFound, 429: ErrRateLimited, 503: ErrUnavailable, 500: ErrServer, 502: ErrServer,
+		400: ErrBadRequest, 401: ErrUnauthorized, 403: ErrForbidden, 404: ErrNotFound, 429: ErrRateLimited, 503: ErrUnavailable, 500: ErrServer, 502: ErrServer,
 	} {
 		c, _ := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(status)
@@ -188,6 +188,9 @@ func TestErrors(t *testing.T) {
 		}
 		if status != 404 && errors.Is(err, ErrNotFound) {
 			t.Errorf("%d matched ErrNotFound", status)
+		}
+		if status != 403 && errors.Is(err, ErrForbidden) {
+			t.Errorf("%d matched ErrForbidden", status)
 		}
 	}
 }
@@ -309,6 +312,16 @@ func TestParseRetryAfter(t *testing.T) {
 	}
 	if d := parseRetryAfter(time.Now().Add(5 * time.Second).UTC().Format(http.TimeFormat)); d <= 0 || d > 5*time.Second {
 		t.Errorf("date form = %v", d)
+	}
+}
+
+func TestSearchBrand(t *testing.T) {
+	c, _ := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"data":[],"meta":{"query":"coke","page":0,"limit":20,"total":0,"source":"catalog","brand":"Coca-Cola"}}`))
+	})
+	page, err := c.Search(context.Background(), "coke", nil)
+	if err != nil || page.Brand != "Coca-Cola" {
+		t.Fatalf("page = %+v, %v", page, err)
 	}
 }
 

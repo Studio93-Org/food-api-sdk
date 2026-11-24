@@ -1,3 +1,10 @@
+## 0.4.1
+
+- `FoodApiForbidden`: a 403 (a key for another API version, such as a v1 key) is its own exception instead of a
+  `FoodApiServerError`.
+- `SearchPage.brand`: the brand a search names, whose foods ranked first ("Coca-Cola" for "coke"); null when it
+  names none.
+
 ## 0.4.0
 
 - `Food.image`: a picture of every food (`FoodImage`: key, a public URL that never changes, and `match`, how close

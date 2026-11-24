@@ -26,13 +26,13 @@ dependencies:
     git:
       url: https://github.com/Studio93-Org/food-api-sdk.git
       path: dart
-      ref: dart-v0.4.0
+      ref: dart-v0.4.1
 ```
 
 Go:
 
 ```bash
-go get github.com/Studio93-Org/food-api-sdk/go@v0.4.0
+go get github.com/Studio93-Org/food-api-sdk/go@v0.4.1
 ```
 
 Swift: in Xcode, File > Add Package Dependencies with `https://github.com/Studio93-Org/food-api-sdk.git`, Up to
@@ -163,10 +163,10 @@ for food in page.foods:
 
 ## Versions
 
-The SDKs follow the API's v2 and are released together as git tags, one per SDK: `dart-v0.4.0` for Flutter (the
-git dependency's `ref`), `go/v0.4.0` for Go (installed as `@v0.4.0`), `0.4.0` for Swift (Swift Package Manager
-reads plain version tags), `kotlin-v0.4.0` for Kotlin (JitPack), `ts-v0.4.0` for TypeScript (a GitHub release
-with the npm tarball) and `py-v0.4.0` for Python. Each SDK lists its changes in its own `CHANGELOG.md`.
+The SDKs follow the API's v2 and are released as git tags, one per SDK: `dart-v0.4.1` for Flutter (the git
+dependency's `ref`), `go/v0.4.1` for Go (installed as `@v0.4.1`), `0.4.0` for Swift (Swift Package Manager reads
+plain version tags), `kotlin-v0.4.0` for Kotlin (JitPack), `ts-v0.4.0` for TypeScript (a GitHub release with the
+npm tarball) and `py-v0.4.0` for Python. Each SDK lists its changes in its own `CHANGELOG.md`.
 
 ## License
 

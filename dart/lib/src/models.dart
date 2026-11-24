@@ -266,6 +266,7 @@ class SearchPage {
     required this.total,
     required this.source,
     this.region,
+    this.brand,
     required this.cached,
   });
 
@@ -283,6 +284,9 @@ class SearchPage {
   /// With regional ranking, the country whose foods ranked first among equally good matches (an ISO code such as
   /// "CA"); null when none did. The API finds the user's country from the device's address, so apps send nothing.
   final String? region;
+
+  /// The brand the query names, whose foods ranked first ("Coca-Cola" for "coke"); null when it names none.
+  final String? brand;
 
   /// Whether the API answered from its cache.
   final bool cached;

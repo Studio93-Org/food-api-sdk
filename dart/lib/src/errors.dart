@@ -25,6 +25,7 @@ sealed class FoodApiHttpException extends FoodApiException {
   static FoodApiHttpException fromStatus(int status, String message, {Duration? retryAfter}) => switch (status) {
     400 => FoodApiBadRequest(message),
     401 => FoodApiUnauthorized(message),
+    403 => FoodApiForbidden(message),
     404 => FoodApiNotFound(message),
     429 => FoodApiRateLimited(message, retryAfter: retryAfter),
     503 => FoodApiUnavailable(message, retryAfter: retryAfter),
@@ -40,6 +41,11 @@ final class FoodApiBadRequest extends FoodApiHttpException {
 /// 401: the API key is missing, invalid or revoked.
 final class FoodApiUnauthorized extends FoodApiHttpException {
   const FoodApiUnauthorized(String message) : super(401, message);
+}
+
+/// 403: the key is for another API version (a v1 key); the SDK needs a v2 key.
+final class FoodApiForbidden extends FoodApiHttpException {
+  const FoodApiForbidden(String message) : super(403, message);
 }
 
 /// 404: no such food or barcode. An answer, not a failure: show "not found".

@@ -7,11 +7,11 @@ error.
 ## Install
 
 ```bash
-go get github.com/Studio93-Org/food-api-sdk/go@v0.4.0
+go get github.com/Studio93-Org/food-api-sdk/go@v0.4.1
 ```
 
 It needs Go 1.23 or newer and has no dependencies beyond the standard library. The module lives in the `go/` folder,
-so its releases are tagged `go/v…`, but you install them by version (`@v0.4.0`, or `@latest`).
+so its releases are tagged `go/v…`, but you install them by version (`@v0.4.1`, or `@latest`).
 
 ## Use
 
@@ -33,7 +33,7 @@ for _, food := range page.Foods {
 
 | Call | Returns |
 |---|---|
-| `Search(ctx, query, &SearchOptions{Page, Limit})` | a page of foods (`Page` is zero-based, `Limit` 1 to 50, default 20); `Region` is the country ranked first, if any |
+| `Search(ctx, query, &SearchOptions{Page, Limit})` | a page of foods (`Page` is zero-based, `Limit` 1 to 50, default 20); `Region` is the country ranked first and `Brand` the brand the query names ("Coca-Cola" for "coke"), if any |
 | `Autocomplete(ctx, query, limit)` | suggestions for what has been typed so far (`limit` 1 to 20, default 8) |
 | `Food(ctx, id)` | one food by its catalog ID |
 | `FoodByBarcode(ctx, scanned)` | the food for a barcode, GS1 code or GS1 Digital Link |
@@ -69,6 +69,8 @@ case errors.Is(err, foodapi.ErrNotFound):
 	// No source knows this barcode: an answer, not a failure
 case errors.Is(err, foodapi.ErrRateLimited), errors.Is(err, foodapi.ErrUnavailable):
 	// Already retried; APIError.RetryAfter says when to try again
+case errors.Is(err, foodapi.ErrForbidden):
+	// The key is for another API version: the SDK needs a v2 key
 case err != nil:
 	return err
 }
