@@ -72,6 +72,75 @@ func TestSearch(t *testing.T) {
 	if names := f.AlternateNames(); len(names) != 3 || names[1] != "soda" {
 		t.Errorf("alternate names = %q", names)
 	}
+	if f.Image != nil || f.Image.IsFallback() {
+		t.Errorf("a food without an image = %+v", f.Image)
+	}
+}
+
+func TestFoodImage(t *testing.T) {
+	withImage := func(image string) string {
+		return strings.Replace(foodJSON, `"nutrient_flags"`, `"image":`+image+`,"nutrient_flags"`, 1)
+	}
+	c, _ := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/v2/foods/cheddar":
+			w.Write([]byte(`{"data":` + withImage(`{"key":"dairy/cheddar","url":"https://images.example.com/dairy/cheddar.jpg","match":"food"}`) + `}`))
+		case "/v2/foods/barcode/3017624010701":
+			w.Write([]byte(`{"data":` + withImage(`{"key":"generic/plate","url":"https://images.example.com/generic/plate.jpg","match":"fallback"}`) + `}`))
+		default:
+			w.Write([]byte(`{"data":` + withImage(`{"key":"dairy/cheese","url":"https://images.example.com/dairy/cheese.jpg","match":"something_new"}`) + `}`))
+		}
+	})
+	ctx := context.Background()
+	food, err := c.Food(ctx, "cheddar")
+	if err != nil || food.Image == nil {
+		t.Fatalf("food = %+v, %v", food, err)
+	}
+	if img := *food.Image; img.Key != "dairy/cheddar" || img.URL != "https://images.example.com/dairy/cheddar.jpg" || img.Match != ImageMatchFood || img.IsFallback() {
+		t.Errorf("image = %+v", img)
+	}
+	if food, err := c.FoodByBarcode(ctx, "3017624010701"); err != nil || !food.Image.IsFallback() {
+		t.Errorf("fallback image: %+v, %v", food, err)
+	}
+	// A match newer than the SDK still parses
+	if food, err := c.Food(ctx, "gouda"); err != nil || food.Image.Match != "something_new" || food.Image.IsFallback() {
+		t.Errorf("unknown match: %+v, %v", food, err)
+	}
+}
+
+func TestImages(t *testing.T) {
+	c, _ := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v2/images" || r.Header.Get("Authorization") != "Bearer test-key" {
+			t.Errorf("request = %s %v", r.URL, r.Header)
+		}
+		w.Write([]byte(`{"data":{"version":1,"updated":"2026-11-17","fallback":"generic/plate",
+		 "groups":[{"key":"dairy","label":"Milk and dairy"}],
+		 "images":[{"key":"dairy/milk","label":"Milk","tier":"category","group":"dairy","category":"dairy/milk","url":"https://images.example.com/dairy/milk.jpg"},
+		  {"key":"dairy/milk-whole","label":"Whole milk","tier":"variant","group":"dairy","category":"dairy/milk","parent":"dairy/milk","url":"https://images.example.com/dairy/milk-whole.jpg"}]}}`))
+	})
+	set, err := c.Images(context.Background())
+	if err != nil || set.Version != 1 || set.Updated != "2026-11-17" || set.Fallback != "generic/plate" || len(set.Groups) != 1 || set.Groups[0].Label != "Milk and dairy" {
+		t.Fatalf("set = %+v, %v", set, err)
+	}
+	whole, ok := set.Image("dairy/milk-whole")
+	if !ok || whole.Tier != ImageTierVariant || whole.Parent != "dairy/milk" || whole.Category != "dairy/milk" || whole.Group != "dairy" || whole.Label != "Whole milk" {
+		t.Errorf("variant = %+v, %v", whole, ok)
+	}
+	if milk, ok := set.Image("dairy/milk"); !ok || milk.Tier != ImageTierCategory || milk.Parent != "" || milk.URL != "https://images.example.com/dairy/milk.jpg" {
+		t.Errorf("category = %+v, %v", milk, ok)
+	}
+	if _, ok := set.Image("dairy/yak-butter"); ok {
+		t.Error("found an image the set doesn't have")
+	}
+}
+
+func TestImagesEmptyIsEmptyNotNil(t *testing.T) {
+	c, _ := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"data":{"version":1,"groups":null}}`))
+	})
+	if set, err := c.Images(context.Background()); err != nil || set.Groups == nil || set.Images == nil {
+		t.Errorf("set = %+v, %v", set, err)
+	}
 }
 
 func TestEmptyResultsAreEmptyNotNil(t *testing.T) {

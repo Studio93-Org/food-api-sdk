@@ -19,6 +19,8 @@
 //		// No source knows this barcode: an answer, not a failure
 //	}
 //
+// Every food has a picture, Food.Image, at a public URL that never changes; Client.Images lists the whole set.
+//
 // A server calling the API for its users passes each user's IP address with WithClientIP, so search ranks for the
 // user's country rather than the server's.
 //

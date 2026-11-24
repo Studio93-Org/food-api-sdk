@@ -28,6 +28,10 @@ void main() {
       await expectLater(client.food('01a163d2-0000-7000-8000-000000000000'), throwsA(isA<FoodApiNotFound>()));
       await client.nutrientStats(page.foods.first.id);
       expect((await client.nutrients()).nutrients.length, greaterThanOrEqualTo(17));
+      expect(food.image, isNotNull);
+      final images = await client.images();
+      expect(images.images, isNotEmpty);
+      expect(images.image(images.fallback), isNotNull);
 
       final badKey = FoodApiClient(apiKey: 'not-a-key', httpClient: IOClient());
       await expectLater(badKey.search('apple', page: 1), throwsA(isA<FoodApiUnauthorized>()));

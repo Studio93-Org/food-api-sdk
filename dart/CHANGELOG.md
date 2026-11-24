@@ -1,3 +1,11 @@
+## 0.4.0
+
+- `Food.image`: a picture of every food (`FoodImage`: key, a public URL that never changes, and `match`, how close
+  it is: `variant`, `food`, `category` or `fallback`); `isFallback` tells the generic picture apps may hide. Null in
+  answers from before the API had images.
+- `FoodApiClient.images()`: the whole image set (`ImageSet`, with its groups and `ImageEntry` images), for apps that
+  bundle or prefetch it.
+
 ## 0.3.0
 
 - `SearchPage.region`: with a key that has regional ranking, the country whose foods ranked first (the user's

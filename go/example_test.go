@@ -123,3 +123,33 @@ func ExampleWithClientIP() {
 	}
 	fmt.Println(page.Region) // "GB" when British foods ranked first
 }
+
+func ExampleFoodImage() {
+	ctx := context.Background()
+	client := foodapi.New(os.Getenv("FOOD_API_KEY"))
+	food, err := client.Food(ctx, "01a163d2-bfdc-7912-878d-4020b11915ab")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Every food has a picture; the URL is public and never changes, so cache it for good
+	if food.Image != nil && !food.Image.IsFallback() { // A fallback is a generic plate or drink: hide it if you like
+		fmt.Println(food.Image.URL)
+	}
+}
+
+func ExampleClient_Images() {
+	ctx := context.Background()
+	client := foodapi.New(os.Getenv("FOOD_API_KEY"))
+
+	// Every image the API can give a food, for example to prefetch them
+	set, err := client.Images(ctx)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, img := range set.Images {
+		fmt.Println(img.Key, img.Label, img.URL)
+	}
+}

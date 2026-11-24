@@ -46,6 +46,14 @@ func TestLive(t *testing.T) {
 	if list, err := c.Nutrients(ctx); err != nil || len(list.Nutrients) < 17 {
 		t.Errorf("nutrients: %v", err)
 	}
+	if food != nil && food.Image == nil {
+		t.Errorf("food without an image: %+v", food)
+	}
+	if set, err := c.Images(ctx); err != nil || len(set.Images) == 0 {
+		t.Errorf("images: %+v, %v", set, err)
+	} else if _, ok := set.Image(set.Fallback); !ok {
+		t.Errorf("the fallback image %q isn't in the set", set.Fallback)
+	}
 	if _, err := New("not-a-key").Search(ctx, "apple", &SearchOptions{Page: 1}); !errors.Is(err, ErrUnauthorized) {
 		t.Errorf("bad key: %v, want ErrUnauthorized", err)
 	}

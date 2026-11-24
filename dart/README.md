@@ -14,7 +14,7 @@ dependencies:
     git:
       url: https://github.com/Studio93-Org/food-api-sdk.git
       path: dart
-      ref: dart-v0.3.0
+      ref: dart-v0.4.0
 ```
 
 Then run `flutter pub get`. To upgrade, change `ref` to a newer `dart-v…` tag.
@@ -154,6 +154,24 @@ String sugarText(Food food, double grams) => switch (food.flag('sugar')) {
 
 `food.alternateNames` has the other names a source gives the food, and `foodApi.nutrientStats(food.id)` the details
 behind each value (samples, spread, how it was obtained) where the source gives them.
+
+## Images
+
+Every food comes with a picture, `food.image` (null in answers from before the API had images): a 256 px JPEG at a
+public URL that needs no API key and never changes, so cache it for good. `match` says how close it is: `ImageMatch.variant` or `ImageMatch.food` show this food,
+`ImageMatch.category` the kind of food (cheese for a gouda), and `ImageMatch.fallback` a generic plate or drink when
+nothing fitted, which you may prefer to hide:
+
+```dart
+Widget? foodPicture(Food food) {
+  final image = food.image;
+  if (image == null || image.isFallback) return null;
+  return Image.network(image.url, width: 64, height: 64);
+}
+```
+
+`foodApi.images()` lists the whole set (each image's key, label, group, tier and URL), for example to prefetch it;
+`set.image(key)` finds one. Values newer than the SDK parse as `ImageMatch.unknown` and `ImageTier.unknown`.
 
 ## Testing your app
 

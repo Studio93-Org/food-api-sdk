@@ -26,6 +26,8 @@ type Food struct {
 	Attributes map[string]string `json:"attributes"`
 	// Nutrient values that aren't plain measurements, by nutrient key. They hold for every serving.
 	NutrientFlags map[string]NutrientFlag `json:"nutrient_flags"`
+	// A picture of the food; nil in answers from before the API had images
+	Image *FoodImage `json:"image"`
 }
 
 // AlternateNames returns the other names the source gives the food ("pop", "soda" for cola), or nil.
@@ -45,6 +47,33 @@ func (f Food) AlternateNames() []string {
 
 // Flag returns the flag of a nutrient value, or "" when it has none.
 func (f Food) Flag(nutrient string) NutrientFlag { return f.NutrientFlags[nutrient] }
+
+// FoodImage is a picture of a food from the API's image set: a 256 px JPEG. The URL is public (it needs no API key)
+// and never changes for a key, so it can be cached for good.
+type FoodImage struct {
+	Key   string     `json:"key"` // "<group>/<slug>", as in Client.Images ("dairy/cheddar")
+	URL   string     `json:"url"`
+	Match ImageMatch `json:"match"`
+}
+
+// IsFallback reports whether the image is the generic picture used when nothing fitted the food (a plate, a drink);
+// apps may prefer to show none. It is false for a nil image.
+func (i *FoodImage) IsFallback() bool { return i != nil && i.Match == ImageMatchFallback }
+
+// ImageMatch says how closely a food's image shows it. Newer API versions may add values: treat an unknown one like
+// ImageMatchCategory.
+type ImageMatch string
+
+const (
+	// ImageMatchVariant: this food in its form or flavour (whole milk, not just milk).
+	ImageMatchVariant ImageMatch = "variant"
+	// ImageMatchFood: this food.
+	ImageMatchFood ImageMatch = "food"
+	// ImageMatchCategory: the kind of food it is, for example cheese for a gouda.
+	ImageMatchCategory ImageMatch = "category"
+	// ImageMatchFallback: nothing fitted, so a generic plate, drink or meal.
+	ImageMatchFallback ImageMatch = "fallback"
+)
 
 // Source is where a food's data comes from (USDA, CNF, FatSecret, OpenFoodFacts) and its ID there.
 type Source struct {
@@ -190,3 +219,49 @@ type OtherNutrient struct {
 	Unit   string `json:"unit"`
 	Source string `json:"source"`
 }
+
+// ImageSet is every food image the API can give a food, for apps that bundle or prefetch them.
+type ImageSet struct {
+	Version  int          `json:"version"`  // Changes when the images are redrawn
+	Updated  string       `json:"updated"`  // yyyy-mm-dd
+	Fallback string       `json:"fallback"` // The key of the image used when nothing fits a food
+	Groups   []ImageGroup `json:"groups"`
+	Images   []ImageEntry `json:"images"`
+}
+
+// Image returns the image with a key, and false when the set has none.
+func (s *ImageSet) Image(key string) (ImageEntry, bool) {
+	for _, img := range s.Images {
+		if img.Key == key {
+			return img, true
+		}
+	}
+	return ImageEntry{}, false
+}
+
+// ImageGroup is a group of images, such as "Milk and dairy".
+type ImageGroup struct {
+	Key   string `json:"key"`
+	Label string `json:"label"`
+}
+
+// ImageEntry is one image of the set.
+type ImageEntry struct {
+	Key   string    `json:"key"` // "<group>/<slug>"
+	Label string    `json:"label"`
+	Tier  ImageTier `json:"tier"`
+	Group string    `json:"group"` // The group's key
+	// The broader image it stands for when no closer one fits: its own key for a category image
+	Category string `json:"category"`
+	Parent   string `json:"parent,omitempty"` // For a variant, the food image it is a form of
+	URL      string `json:"url"`
+}
+
+// ImageTier says how specific an image is. Newer API versions may add values.
+type ImageTier string
+
+const (
+	ImageTierCategory ImageTier = "category" // A kind of food (cheese)
+	ImageTierFood     ImageTier = "food"     // One food (cheddar)
+	ImageTierVariant  ImageTier = "variant"  // A form of a food (whole milk)
+)

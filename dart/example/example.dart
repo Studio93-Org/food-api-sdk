@@ -1,6 +1,7 @@
 // The examples in README.md; flutter analyze checks them, so the README stays correct.
 // ignore_for_file: avoid_print
 
+import 'package:flutter/widgets.dart';
 import 'package:studio93_food_api/studio93_food_api.dart';
 
 // Create one client for the whole app (in your dependency injection, a provider or a top-level variable). Load the
@@ -77,6 +78,20 @@ String sugarText(Food food, double grams) => switch (food.flag('sugar')) {
   NutrientFlag.approximate => '~${grams.toStringAsFixed(1)} g',
   _ => '${grams.toStringAsFixed(1)} g',
 };
+
+/// The food's picture, or nothing when only the generic fallback fitted.
+Widget? foodPicture(Food food) {
+  final image = food.image;
+  if (image == null || image.isFallback) return null;
+  return Image.network(image.url, width: 64, height: 64);
+}
+
+Future<void> prefetchImages() async {
+  final set = await foodApi.images();
+  for (final image in set.images) {
+    print('${image.key}: ${image.label} ${image.url}');
+  }
+}
 
 Future<void> main() async {
   await search();

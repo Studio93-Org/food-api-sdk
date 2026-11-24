@@ -17,7 +17,7 @@ import (
 )
 
 // Version is the SDK version, sent in the User-Agent header.
-const Version = "0.3.0"
+const Version = "0.4.0"
 
 // DefaultBaseURL is the Food API.
 const DefaultBaseURL = "https://api.studio93.io"
@@ -234,6 +234,20 @@ func (c *Client) Nutrients(ctx context.Context) (*NutrientList, error) {
 	if _, err := c.get(ctx, "/v2/nutrients", nil, &result); err != nil {
 		return nil, err
 	}
+	return &result.Data, nil
+}
+
+// Images lists every food image, with its label, group and URL, for apps that bundle or prefetch them. Foods
+// carry their own image, so showing a food's picture needs no call to Images.
+func (c *Client) Images(ctx context.Context) (*ImageSet, error) {
+	var result struct {
+		Data ImageSet `json:"data"`
+	}
+	if _, err := c.get(ctx, "/v2/images", nil, &result); err != nil {
+		return nil, err
+	}
+	result.Data.Groups = nonNil(result.Data.Groups)
+	result.Data.Images = nonNil(result.Data.Images)
 	return &result.Data, nil
 }
 

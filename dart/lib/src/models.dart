@@ -38,6 +38,54 @@ enum NutrientFlag {
   };
 }
 
+/// How closely a food's image shows it.
+enum ImageMatch {
+  /// This food in its form or flavour (whole milk, not just milk).
+  variant,
+
+  /// This food.
+  food,
+
+  /// The kind of food it is, for example cheese for a gouda.
+  category,
+
+  /// Nothing fitted, so a generic plate, drink or meal; apps may prefer to show none.
+  fallback,
+
+  /// A value this version of the SDK doesn't know: treat it like [category].
+  unknown;
+
+  static ImageMatch parse(Object? value) => switch (value) {
+    'variant' => ImageMatch.variant,
+    'food' => ImageMatch.food,
+    'category' => ImageMatch.category,
+    'fallback' => ImageMatch.fallback,
+    _ => ImageMatch.unknown,
+  };
+}
+
+/// How specific an image of the set is.
+enum ImageTier {
+  /// A kind of food (cheese).
+  category,
+
+  /// One food (cheddar).
+  food,
+
+  /// A form of a food (whole milk).
+  variant,
+
+  /// A tier this version of the SDK doesn't know.
+  unknown;
+
+  static ImageTier parse(Object? value) => switch (value) {
+    'category' => ImageTier.category,
+    'food' => ImageTier.food,
+    'variant' => ImageTier.variant,
+    _ => ImageTier.unknown,
+  };
+}
+
 /// One food in the catalog, with its nutrition per serving.
 class Food {
   Food({
@@ -52,6 +100,7 @@ class Food {
     this.category,
     this.attributes = const {},
     this.nutrientFlags = const {},
+    this.image,
   });
 
   factory Food.fromJson(Map<String, dynamic> json) => Food(
@@ -66,6 +115,10 @@ class Food {
     category: json['category'] as String?,
     attributes: _stringMap(json['attributes']),
     nutrientFlags: _stringMap(json['nutrient_flags']).map((k, v) => MapEntry(k, NutrientFlag.parse(v))),
+    image: switch (json['image']) {
+      final Map<String, dynamic> image => FoodImage.fromJson(image),
+      _ => null,
+    },
   );
 
   final String id;
@@ -86,12 +139,38 @@ class Food {
   /// Nutrient values that aren't plain measurements, by nutrient key. They hold for every serving.
   final Map<String, NutrientFlag> nutrientFlags;
 
+  /// A picture of the food; null in answers from before the API had images.
+  final FoodImage? image;
+
   /// Other names the source gives the food ("pop", "soda" for cola).
   List<String> get alternateNames =>
       (attributes['alternate_names'] ?? '').split(',').map((n) => n.trim()).where((n) => n.isNotEmpty).toList();
 
   /// The flag of a nutrient value, or null when it has none.
   NutrientFlag? flag(String nutrient) => nutrientFlags[nutrient];
+}
+
+/// A picture of a food from the API's image set: a 256 px JPEG. The URL is public (it needs no API key) and never
+/// changes for a key, so it can be cached for good.
+class FoodImage {
+  const FoodImage({required this.key, required this.url, required this.match});
+
+  factory FoodImage.fromJson(Map<String, dynamic> json) => FoodImage(
+    key: json['key'] as String? ?? '',
+    url: json['url'] as String? ?? '',
+    match: ImageMatch.parse(json['match']),
+  );
+
+  /// `group/slug`, as in [FoodApiClient.images] ("dairy/cheddar").
+  final String key;
+  final String url;
+
+  /// How closely the image shows the food.
+  final ImageMatch match;
+
+  /// Whether this is the generic picture used when nothing fitted the food (a plate, a drink); apps may prefer to
+  /// show none.
+  bool get isFallback => match == ImageMatch.fallback;
 }
 
 /// Where a food's data comes from (USDA, CNF, FatSecret, OpenFoodFacts) and its ID there.
@@ -361,6 +440,93 @@ class OtherNutrient {
   final String name;
   final String unit;
   final String source;
+}
+
+/// Every food image the API can give a food, for apps that bundle or prefetch them.
+class ImageSet {
+  const ImageSet({
+    required this.version,
+    required this.updated,
+    required this.fallback,
+    required this.groups,
+    required this.images,
+  });
+
+  factory ImageSet.fromJson(Map<String, dynamic> json) => ImageSet(
+    version: (json['version'] as num?)?.toInt() ?? 0,
+    updated: json['updated'] as String? ?? '',
+    fallback: json['fallback'] as String? ?? '',
+    groups: _list(json['groups']).map((g) => ImageGroup.fromJson(g as Map<String, dynamic>)).toList(),
+    images: _list(json['images']).map((i) => ImageEntry.fromJson(i as Map<String, dynamic>)).toList(),
+  );
+
+  /// Changes when the images are redrawn.
+  final int version;
+
+  /// yyyy-mm-dd.
+  final String updated;
+
+  /// The key of the image used when nothing fits a food.
+  final String fallback;
+  final List<ImageGroup> groups;
+  final List<ImageEntry> images;
+
+  /// The image with [key], or null when the set has none.
+  ImageEntry? image(String key) {
+    for (final image in images) {
+      if (image.key == key) return image;
+    }
+    return null;
+  }
+}
+
+/// A group of images, such as "Milk and dairy".
+class ImageGroup {
+  const ImageGroup({required this.key, required this.label});
+
+  factory ImageGroup.fromJson(Map<String, dynamic> json) =>
+      ImageGroup(key: json['key'] as String, label: json['label'] as String? ?? '');
+
+  final String key;
+  final String label;
+}
+
+/// One image of the set.
+class ImageEntry {
+  const ImageEntry({
+    required this.key,
+    required this.label,
+    required this.tier,
+    required this.group,
+    required this.category,
+    required this.url,
+    this.parent,
+  });
+
+  factory ImageEntry.fromJson(Map<String, dynamic> json) => ImageEntry(
+    key: json['key'] as String,
+    label: json['label'] as String? ?? '',
+    tier: ImageTier.parse(json['tier']),
+    group: json['group'] as String? ?? '',
+    category: json['category'] as String? ?? '',
+    parent: json['parent'] as String?,
+    url: json['url'] as String? ?? '',
+  );
+
+  /// `group/slug`.
+  final String key;
+  final String label;
+  final ImageTier tier;
+
+  /// The group's key.
+  final String group;
+
+  /// The broader image it stands for when no closer one fits: its own key for a category image.
+  final String category;
+
+  /// For a variant, the food image it is a form of; null otherwise.
+  final String? parent;
+  final String url;
 }
 
 double? _double(Object? v) => (v as num?)?.toDouble();

@@ -7,11 +7,11 @@ error.
 ## Install
 
 ```bash
-go get github.com/Studio93-Org/food-api-sdk/go@v0.3.0
+go get github.com/Studio93-Org/food-api-sdk/go@v0.4.0
 ```
 
 It needs Go 1.23 or newer and has no dependencies beyond the standard library. The module lives in the `go/` folder,
-so its releases are tagged `go/v…`, but you install them by version (`@v0.3.0`, or `@latest`).
+so its releases are tagged `go/v…`, but you install them by version (`@v0.4.0`, or `@latest`).
 
 ## Use
 
@@ -39,6 +39,7 @@ for _, food := range page.Foods {
 | `FoodByBarcode(ctx, scanned)` | the food for a barcode, GS1 code or GS1 Digital Link |
 | `NutrientStats(ctx, id)` | how each of a food's nutrient values was obtained |
 | `Nutrients(ctx)` | every nutrient key, with its name and unit |
+| `Images(ctx)` | every food image, with its label, group and URL |
 
 Cancel a call, or give it a deadline, with its context. For search as the user types, cancel the previous call's
 context when a new one starts.
@@ -99,6 +100,22 @@ measured by neither ("1 serving") gets none.
 
 Flags mark values that aren't plain measurements: `FlagUpperBound`, `FlagApproximate` and `FlagAssumedZero`.
 `food.AlternateNames()` has the other names a source gives the food.
+
+## Images
+
+Every food comes with a picture, `food.Image` (nil in answers from before the API had images): a 256 px JPEG at a
+public URL that needs no API key and never changes, so cache it for good. `Match` says how close it is:
+`ImageMatchVariant` or `ImageMatchFood` show this food, `ImageMatchCategory` the kind of food (cheese for a gouda),
+and `ImageMatchFallback` a generic plate or drink when nothing fitted, which you may prefer to hide:
+
+```go
+if food.Image != nil && !food.Image.IsFallback() {
+	showPicture(food.Image.URL)
+}
+```
+
+`Images(ctx)` lists the whole set (each image's key, label, group, tier and URL), for example to prefetch it;
+`set.Image(key)` finds one. Newer API versions may add match and tier values.
 
 ## Tests
 

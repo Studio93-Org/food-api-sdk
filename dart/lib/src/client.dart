@@ -12,7 +12,7 @@ import 'platform_client.dart';
 import 'session.dart';
 
 /// The SDK version, sent in the User-Agent header.
-const sdkVersion = '0.3.0';
+const sdkVersion = '0.4.0';
 
 /// The Food API.
 final defaultBaseUrl = Uri.parse('https://api.studio93.io');
@@ -122,6 +122,13 @@ class FoodApiClient {
   Future<NutrientList> nutrients({Future<void>? cancel}) async {
     final res = await _get(['v2', 'nutrients'], const {}, cancel);
     return NutrientList.fromJson(res.body['data'] as Map<String, dynamic>);
+  }
+
+  /// Every food image, with its label, group and URL, for apps that bundle or prefetch them. Foods carry their own
+  /// [Food.image], so showing a food's picture needs no call to this.
+  Future<ImageSet> images({Future<void>? cancel}) async {
+    final res = await _get(['v2', 'images'], const {}, cancel);
+    return ImageSet.fromJson(res.body['data'] as Map<String, dynamic>);
   }
 
   /// A session that keeps only the latest search and the latest autocomplete: use one per search screen.

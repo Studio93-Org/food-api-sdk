@@ -92,6 +92,71 @@ void main() {
     expect(food.flag('protein'), isNull);
     expect(food.alternateNames, ['pop', 'soda', 'soft drink']);
     expect(food.type, FoodType.generic);
+    expect(food.image, isNull, reason: 'answers from before images still parse');
+  });
+
+  test('foods carry their image', () async {
+    String withImage(String image) => foodJson.replaceFirst('"nutrient_flags"', '"image":$image,"nutrient_flags"');
+    final fake = FakeClient(
+      (r) async => json(200, switch (r.url.path) {
+        '/v2/foods/cheddar' =>
+          '{"data":${withImage('{"key":"dairy/cheddar","url":"https://images.example.com/dairy/cheddar.jpg","match":"food"}')}}',
+        '/v2/foods/barcode/3017624010701' =>
+          '{"data":${withImage('{"key":"generic/plate","url":"https://images.example.com/generic/plate.jpg","match":"fallback"}')}}',
+        _ =>
+          '{"data":${withImage('{"key":"dairy/cheese","url":"https://images.example.com/dairy/cheese.jpg","match":"something_new"}')}}',
+      }),
+    );
+    final client = clientWith(fake);
+
+    final image = (await client.food('cheddar')).image!;
+    expect(image.key, 'dairy/cheddar');
+    expect(image.url, 'https://images.example.com/dairy/cheddar.jpg');
+    expect(image.match, ImageMatch.food);
+    expect(image.isFallback, isFalse);
+
+    expect((await client.foodByBarcode('3017624010701')).image!.isFallback, isTrue);
+
+    final newer = (await client.food('gouda')).image!;
+    expect(newer.match, ImageMatch.unknown, reason: 'matches newer than the SDK still parse');
+    expect(newer.isFallback, isFalse);
+  });
+
+  test('the image set parses', () async {
+    final fake = FakeClient(
+      (r) async => json(
+        200,
+        '''{"data":{"version":1,"updated":"2026-11-17","fallback":"generic/plate",
+ "groups":[{"key":"dairy","label":"Milk and dairy"}],
+ "images":[{"key":"dairy/milk","label":"Milk","tier":"category","group":"dairy","category":"dairy/milk","url":"https://images.example.com/dairy/milk.jpg"},
+  {"key":"dairy/milk-whole","label":"Whole milk","tier":"variant","group":"dairy","category":"dairy/milk","parent":"dairy/milk","url":"https://images.example.com/dairy/milk-whole.jpg"},
+  {"key":"dairy/milk-oat","label":"Oat milk","tier":"something_new","group":"dairy","category":"dairy/milk","url":"https://images.example.com/dairy/milk-oat.jpg"}]}}''',
+      ),
+    );
+    final set = await clientWith(fake).images();
+
+    expect(fake.requests.single.url.path, '/v2/images');
+    expect(fake.requests.single.headers['Authorization'], 'Bearer test-key');
+    expect(set.version, 1);
+    expect(set.updated, '2026-11-17');
+    expect(set.fallback, 'generic/plate');
+    expect(set.groups.single.label, 'Milk and dairy');
+    expect(set.images, hasLength(3));
+
+    final milk = set.image('dairy/milk')!;
+    expect(milk.tier, ImageTier.category);
+    expect(milk.parent, isNull);
+    expect(milk.url, 'https://images.example.com/dairy/milk.jpg');
+
+    final whole = set.image('dairy/milk-whole')!;
+    expect(whole.tier, ImageTier.variant);
+    expect(whole.label, 'Whole milk');
+    expect(whole.group, 'dairy');
+    expect(whole.category, 'dairy/milk');
+    expect(whole.parent, 'dairy/milk');
+
+    expect(set.image('dairy/milk-oat')!.tier, ImageTier.unknown, reason: 'tiers newer than the SDK still parse');
+    expect(set.image('dairy/yak-butter'), isNull);
   });
 
   test('empty results are empty lists', () async {

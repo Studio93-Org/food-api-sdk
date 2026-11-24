@@ -22,13 +22,13 @@ dependencies:
     git:
       url: https://github.com/Studio93-Org/food-api-sdk.git
       path: dart
-      ref: dart-v0.3.0
+      ref: dart-v0.4.0
 ```
 
 Go:
 
 ```bash
-go get github.com/Studio93-Org/food-api-sdk/go@v0.3.0
+go get github.com/Studio93-Org/food-api-sdk/go@v0.4.0
 ```
 
 ## Quick start
@@ -78,13 +78,16 @@ for _, food := range page.Foods {
   the user's country, or one set on the key. Apps calling from the user's device get it automatically; a Go server
   calling for its users passes each user's address with `WithClientIP`. The page's region says which country ranked
   first.
+- **Food images.** Every food comes with a picture (a 256 px JPEG at a public URL that never changes, so it can be
+  cached for good) and how closely it shows the food: this food, its kind (cheese for a gouda), or a generic
+  fallback apps may hide. The whole image set can be listed to bundle or prefetch it.
 - **Nutrition as numbers.** Nutrients are numbers, null when unknown, with flags for values that aren't plain
   measurements: `upper_bound` (the label said "less than"), `approximate` and `assumed_zero`.
 
 ## Versions
 
-Both SDKs follow the API's v2 and are released together as git tags: `dart-v0.3.0` for Flutter (the git
-dependency's `ref`) and `go/v0.3.0` for Go (installed as `@v0.3.0`). Changes are listed in
+Both SDKs follow the API's v2 and are released together as git tags: `dart-v0.4.0` for Flutter (the git
+dependency's `ref`) and `go/v0.4.0` for Go (installed as `@v0.4.0`). Changes are listed in
 [dart/CHANGELOG.md](dart/CHANGELOG.md).
 
 ## License
