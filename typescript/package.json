@@ -1,0 +1,48 @@
+{
+  "name": "@studio93/food-api",
+  "version": "0.4.0",
+  "description": "Client for the Studio93 Food API (v2): typo-tolerant food search, autocomplete, barcode lookups and detailed nutrition, for browsers, React Native and Node.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Studio93-Org/food-api-sdk.git",
+    "directory": "typescript"
+  },
+  "homepage": "https://api.studio93.io/food/docs",
+  "keywords": [
+    "food",
+    "nutrition",
+    "barcode",
+    "studio93"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "test": "npm run build && npm run typecheck && node --test test/*.test.ts",
+    "format": "prettier --write .",
+    "lint": "prettier --check . && npm run typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.130",
+    "prettier": "^3.10.1",
+    "typescript": "~6.0.3"
+  }
+}

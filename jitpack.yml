@@ -1,0 +1,5 @@
+# JitPack builds the Kotlin SDK (kotlin/) from a tag such as kotlin-v0.4.0. The other SDKs install from git directly.
+jdk:
+  - openjdk17
+install:
+  - cd kotlin && ./gradlew publishToMavenLocal

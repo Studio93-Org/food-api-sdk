@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "studio93-food-api"
+version = "0.4.0"
+description = "Python client for the Studio93 Food API (v2): food search, autocomplete, barcodes and nutrition"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Studio93" }]
+dependencies = []
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Documentation = "https://api.studio93.io/food/docs"
+Source = "https://github.com/Studio93-Org/food-api-sdk"
+
+[tool.setuptools]
+packages = ["studio93_food_api"]
+
+[tool.setuptools.package-data]
+studio93_food_api = ["py.typed"]

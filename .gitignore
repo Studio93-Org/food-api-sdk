@@ -8,3 +8,8 @@ dart/build/
 dart/pubspec.lock
 dart/.flutter-plugins
 dart/.flutter-plugins-dependencies
+
+# Swift (Package.swift at the root, sources in swift/)
+.build/
+.swiftpm/
+swift/.build/

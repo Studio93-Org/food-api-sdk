@@ -37,3 +37,53 @@ jobs:
       - run: dart format --line-length 120 --output=none --set-exit-if-changed lib test example
       - run: flutter analyze
       - run: flutter test # The live test skips without FOOD_API_KEY
+
+  swift:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift build -Xswiftc -warnings-as-errors --scratch-path swift/.build
+      - run: swift test --scratch-path swift/.build # The live test skips without FOOD_API_KEY
+
+  kotlin:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kotlin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - run: ./gradlew build # The live test skips without FOOD_API_KEY
+
+  typescript:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: typescript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test # Builds dist/ first; the live test skips without FOOD_API_KEY
+      - run: git diff --exit-code -- dist # The committed build must match the source
+
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.13"]
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m unittest # The live test skips without FOOD_API_KEY
