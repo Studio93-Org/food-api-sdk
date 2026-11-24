@@ -31,6 +31,9 @@ import { FoodApiClient } from '@studio93/food-api';
 It has no dependencies: requests go through the platform's own `fetch`. The package is an ES module; from CommonJS,
 load it with `await import('@studio93/food-api')` (or `require()` on Node 20.19 / 22.12 and newer).
 
+In a web page, the API answers your page's cross-origin requests (CORS), errors included. A key in a web page can be
+read by anyone who opens it, so call from your server when you can.
+
 ## Create one client for the whole app
 
 ```ts
